@@ -31,25 +31,24 @@ class Question:
         pass
 
 def validate_questions(raw):
+
+    def check_id(item, n):
+        if "id" not in item:
+            raise QuizError(f"item {n}: missing 'id'")
+        question_id = item["id"]
+        if not isinstance(question_id, int):
+            raise QuizError(f"item {n}: id must be an integer, got {type(question_id).__name__}")
+        if question_id != n:
+            raise QuizError(f"item {n}: expected id {n}, got {question_id}")
+
     if not isinstance(raw, list):
         raise QuizError(f"top level must be a list, got {type(raw).__name__}")
     if len(raw) == 0:
         raise QuizError("the file contains nothing")
-    seen = set()
     for n, item in enumerate(raw, start=1):
-        if not isinstance(item, dict): # checking each id contains a list
+        if not isinstance(item, dict):
             raise QuizError(f"item {n}: expected a mapping, got {type(item).__name__}")
-        if "id" not in item:
-            raise QuizError(f"item {n}: missing 'id'")
-        if item["id"] != n:
-            raise ValueError(f"item {n}: expected num {n}, got {item["id"]}")
-        question_id = item["id"]
-        if not isinstance(question_id, int): #checking if it is int or boolean
-            raise QuizError(f"item {n}: port must be an integer, got {type(item).__name__}")
-        if question_id in seen:
-            raise QuizError(f"item {n}: duplicate ids {question_id!r}")
-
-        seen.add(question_id)
+        check_id(item, n)
 
     return raw
 
@@ -100,11 +99,14 @@ def main():
     file_exists(file_name)
     try:
         questions = load_questions(file_name)
+        validate_questions(questions)
     except QuizError as e:
         print(f"error: {e}", file=sys.stderr)
         sys.exit(1)
 
-    validate_questions([{"id": 1}, {"id": 2}])
+
+    # validate_questions("hello")               # fails the first check: top level
+    #validate_questions([{"id": 1}, "oops"])   # passes the first, fails the second: item 2
 
 
 
