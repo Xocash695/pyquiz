@@ -1,5 +1,5 @@
-# Every option is quoted on purpose. Unquoted values like no, null or [1, 2, 3]
-# would be parsed by YAML as a bool, None or a list instead of a string.
+# Options are labelled A, B, C, D. The answer is the label of the correct option.
+# Letter keys are quoted so YAML doesn't read them as anything else.
 
 - id: 1
   topic: git
@@ -7,11 +7,11 @@
     # You edited app.py but have not run git add yet.
     # Which command shows exactly which lines changed?
   options:
-    - "git log app.py"
-    - "git status app.py"
-    - "git diff app.py"
-    - "git blame app.py"
-  answer: C
+    "A": "git log app.py"
+    "B": "git status app.py"
+    "C": "git diff app.py"
+    "D": "git blame app.py"
+  answer: "C"
   why: "git diff shows the unstaged line changes. status lists file states only, log lists commits, blame shows who last changed each line."
 
 - id: 2
@@ -26,11 +26,11 @@
     finally:
         print("c")
   options:
-    - "a, then c"
-    - "a, then b, then c"
-    - "a only"
-    - "b, then c"
-  answer: A
+    "A": "a, then c"
+    "B": "a, then b, then c"
+    "C": "a only"
+    "D": "b, then c"
+  answer: "A"
   why: "int('x') raises ValueError, so except runs and else is skipped. finally always runs."
 
 - id: 3
@@ -43,11 +43,11 @@
     add(a)
     print(a)
   options:
-    - "[1, 2, 3, 4]"
-    - "[1, 2, 3]"
-    - "[4]"
-    - "None"
-  answer: B
+    "A": "[1, 2, 3, 4]"
+    "B": "[1, 2, 3]"
+    "C": "[4]"
+    "D": "None"
+  answer: "B"
   why: "lst + [4] builds a new list and rebinds the local name, so the caller's list is untouched. lst.append(4) would have changed it."
 
 - id: 4
@@ -56,11 +56,11 @@
     import json
     print(json.dumps({"x": (1, 2), 5: None}))
   options:
-    - '{"x": (1, 2), 5: None}'
-    - '{"x": [1, 2], 5: null}'
-    - '{"x": "(1, 2)", "5": "None"}'
-    - '{"x": [1, 2], "5": null}'
-  answer: D
+    "A": '{"x": (1, 2), 5: None}'
+    "B": '{"x": [1, 2], 5: null}'
+    "C": '{"x": "(1, 2)", "5": "None"}'
+    "D": '{"x": [1, 2], "5": null}'
+  answer: "D"
   why: "Tuples become arrays, None becomes null, and JSON object keys are always strings."
 
 - id: 5
@@ -71,9 +71,9 @@
     r = requests.get(url, timeout=5)
     print(r.json()["error"])
   options:
-    - "HTTPError is raised by get()"
-    - "boom"
-    - "Timeout is raised by get()"
-    - "KeyError"
-  answer: B
+    "A": "HTTPError is raised by get()"
+    "B": "boom"
+    "C": "Timeout is raised by get()"
+    "D": "KeyError"
+  answer: ["B", "D"]
   why: "requests does not raise on 5xx unless you call raise_for_status(). The server answered in time and the body is valid JSON, so this prints boom."
