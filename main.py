@@ -20,15 +20,12 @@ def main():
     file_name = get_questions_fileName()
     file_exists(file_name)
     try:
-        questions = quiz.load_questions(file_name)
-        quiz.validate_questions(questions)
+        settings, questions = quiz.load_questions(file_name)
     except quiz.QuizError as e:
         print(f"error: {e}", file=sys.stderr)
         sys.exit(1)
-
-    # validate_questions("hello")               # fails the first check: top level
-    #validate_questions([{"id": 1}, "oops"])   # passes the first, fails the second: item 2
-
+    for n, q in enumerate(questions, start=1):
+        print(f"{n}. {q.question}")
 
 
 if __name__ == "__main__":

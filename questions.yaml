@@ -1,79 +1,81 @@
-# Options are labelled A, B, C, D. The answer is the label of the correct option.
-# Letter keys are quoted so YAML doesn't read them as anything else.
+settings:
+  shuffle_questions: true
+  shuffle_options: true
 
-- id: 1
-  topic: git
-  code: |
-    # You edited app.py but have not run git add yet.
-    # Which command shows exactly which lines changed?
-  options:
-    "A": "git log app.py"
-    "B": "git status app.py"
-    "C": "git diff app.py"
-    "D": "git blame app.py"
-  answer: "C"
-  why: "git diff shows the unstaged line changes. status lists file states only, log lists commits, blame shows who last changed each line."
+questions:
+  - id: 1
+    topic: git
+    question: |
+      # You edited app.py but have not run git add yet.
+      # Which command shows exactly which lines changed?
+    options:
+      "A": "git log app.py"
+      "B": "git status app.py"
+      "C": "git diff app.py"
+      "D": "git blame app.py"
+    answer: "C"
+    why: "git diff shows the unstaged line changes. status lists file states only, log lists commits, blame shows who last changed each line."
 
-- id: 2
-  topic: exceptions
-  code: |
-    try:
-        int("x")
-    except ValueError:
-        print("a")
-    else:
-        print("b")
-    finally:
-        print("c")
-  options:
-    "A": "a, then c"
-    "B": "a, then b, then c"
-    "C": "a only"
-    "D": "b, then c"
-  answer: "A"
-  why: "int('x') raises ValueError, so except runs and else is skipped. finally always runs."
+  - id: 2
+    topic: exceptions
+    question: |
+      try:
+          int("x")
+      except ValueError:
+          print("a")
+      else:
+          print("b")
+      finally:
+          print("c")
+    options:
+      "A": "a, then c"
+      "B": "a, then b, then c"
+      "C": "a only"
+      "D": "b, then c"
+    answer: "A"
+    why: "int('x') raises ValueError, so except runs and else is skipped. finally always runs."
 
-- id: 3
-  topic: mutation
-  code: |
-    def add(lst):
-        lst = lst + [4]
+  - id: 3
+    topic: mutation
+    question: |
+      def add(lst):
+          lst = lst + [4]
 
-    a = [1, 2, 3]
-    add(a)
-    print(a)
-  options:
-    "A": "[1, 2, 3, 4]"
-    "B": "[1, 2, 3]"
-    "C": "[4]"
-    "D": "None"
-  answer: "B"
-  why: "lst + [4] builds a new list and rebinds the local name, so the caller's list is untouched. lst.append(4) would have changed it."
+      a = [1, 2, 3]
+      add(a)
+      print(a)
+    options:
+      "A": "[1, 2, 3, 4]"
+      "B": "[1, 2, 3]"
+      "C": "[4]"
+      "D": "None"
+    answer: "B"
+    why: "lst + [4] builds a new list and rebinds the local name, so the caller's list is untouched. lst.append(4) would have changed it."
 
-- id: 4
-  topic: json
-  code: |
-    import json
-    print(json.dumps({"x": (1, 2), 5: None}))
-  options:
-    "A": '{"x": (1, 2), 5: None}'
-    "B": '{"x": [1, 2], 5: null}'
-    "C": '{"x": "(1, 2)", "5": "None"}'
-    "D": '{"x": [1, 2], "5": null}'
-  answer: "D"
-  why: "Tuples become arrays, None becomes null, and JSON object keys are always strings."
+  - id: 4
+    topic: json
+    question: |
+      import json
+      print(json.dumps({"x": (1, 2), 5: None}))
+    options:
+      "A": '{"x": (1, 2), 5: None}'
+      "B": '{"x": [1, 2], 5: null}'
+      "C": '{"x": "(1, 2)", "5": "None"}'
+      "D": '{"x": [1, 2], "5": null}'
+    answer: "D"
+    why: "Tuples become arrays, None becomes null, and JSON object keys are always strings."
 
-- id: 5
-  topic: requests
-  code: |
-    # The server answers 500 within one second.
-    # The body is the JSON text {"error": "boom"}.
-    r = requests.get(url, timeout=5)
-    print(r.json()["error"])
-  options:
-    "A": "HTTPError is raised by get()"
-    "B": "boom"
-    "C": "Timeout is raised by get()"
-    "D": "KeyError"
-  answer: ["B", "D"]
-  why: "requests does not raise on 5xx unless you call raise_for_status(). The server answered in time and the body is valid JSON, so this prints boom."
+  - id: 5
+    topic: requests
+    question: |
+      # The server answers 500 within one second.
+      # The body is the JSON text {"error": "boom"}.
+      r = requests.get(url, timeout=5)
+      print(r.json()["error"])
+    options:
+      "A": "HTTPError is raised by get()"
+      "B": "boom"
+      "C": "Timeout is raised by get()"
+      "D": "KeyError"
+    answer: ["B", "D"]
+    why: "requests does not raise on 5xx unless you call raise_for_status(). The server answered in time and the body is valid JSON, so this prints boom."

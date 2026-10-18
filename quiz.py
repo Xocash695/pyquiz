@@ -1,12 +1,13 @@
 import json
 import functools
 import yaml
-import sys
-import pathlib
+import random
 
-REQUIRED_KEYS = ("id", "code", "options", "answer") #things we are looking for
+REQUIRED_KEYS = ("id", "question", "options", "answer") #things we are looking for
 LETTERS = ("A", "B", "C", "D") # anwser keys
 OPTIONAL_KEYS = ("topic", "why")
+DEFAULT_SETTINGS = {"shuffle_questions": False, "shuffle_options": False}
+
 class QuizError(Exception):
     """Questions are improperly formatted"""
 
@@ -24,16 +25,46 @@ def logged(func):
 
 class Question:
     def __init__(self, data):
-
-        pass
+        self.id = data["id"]
+        self.question = data["question"]
+        self.options = data["options"]
+        self.answer = data["answer"] # this means that it should exist
+        self.topic = data.get("topic")
+        self.why = data.get("why") # .get basically says that this may not exist if it doesn't it gives none
 
     def is_correct(self, letter):
         pass
 
+
+
+def validate_file(raw):
+    def check_settings(settings):
+        if not isinstance(settings, dict):
+            raise QuizError(f"settings must be a mapping, got {type(settings).__name__}")
+        unknown = settings.keys() - DEFAULT_SETTINGS.keys()
+        if unknown:
+            raise QuizError(f"settings: unknown key(s) {', '.join(sorted(unknown))}")
+        for key, value in settings.items():
+            if not isinstance(value, bool):
+                raise QuizError(f"settings: {key} must be true or false, got {type(value).__name__}")
+    if not isinstance(raw, dict):
+        raise QuizError(f"top level must be a mapping, got {type(raw).__name__}")
+    if "questions" not in raw:
+        raise QuizError("missing 'questions'")
+
+    settings = raw.get("settings", {})
+    check_settings(settings)
+
+    questions = validate_questions(raw["questions"]) # we pass the questions portion to the question validation system
+
+    merged_settings = dict(DEFAULT_SETTINGS) # create dict with the current settings
+    merged_settings.update(settings) # update the settings based on what we have
+    return merged_settings, questions # return the settings and the questions seperatly
+
+
 def validate_questions(raw):
 
     def check_id(item, n):
-
         question_id = item["id"]
         if not isinstance(question_id, int):
             raise QuizError(f"item {n}: id must be an integer, got {type(question_id).__name__}")
@@ -100,7 +131,7 @@ def validate_questions(raw):
         check_keys(item, n) # check that the essential keys are there
         check_id(item, n) # check that the id of the item works fine
         drop_blank_optional(item, n) # if any optionals are left empty then delete it from the item cause it doesn't matter
-        check_text(item, n, "code") # check that the code portion has something there to quiz the person
+        check_text(item, n, "question") # check that the question portion has something there to quiz the person
         check_options(item, n) # check that there is valid options labeled in capital letters "A", "B", "C", etc
         check_answer(item, n) # check that there is valid anwser option like "A"
         # print(item, "\n")
@@ -110,17 +141,25 @@ def validate_questions(raw):
 
 def load_questions(path):
     try:
-        with open(path, 'r') as f:          # open the file
-            raw = yaml.load(f, Loader=yaml.SafeLoader)       # parse the YAML from f
-    except OSError as e:            # file problems (missing, unreadable, a folder)
+        with open(path, 'r') as f:
+            raw = yaml.safe_load(f)
+    except OSError as e:
         raise QuizError(f"cannot read {path}: {e}") from e
-    except yaml.YAMLError as e:            # the file opened but the YAML is broken
+    except yaml.YAMLError as e:
         raise QuizError(f"invalid YAML in {path}: {e}") from e
-    return raw
+
+    settings, validated = validate_file(raw) # run all the validation and get back the settings and the validated questions
+    questions = [Question(item) for item in validated] # create objects of Question
+
+    if settings["shuffle_questions"]:
+        questions = random.sample(questions, len(questions))
+
+    return settings, questions
 
 
 
 def ask(question):
+
     pass
 
 
@@ -134,36 +173,3 @@ def save_results(path, scores):
 
 def log_attempt(path, line):
     pass
-
-def get_questions_fileName():
-    """Get the name of the questions file """
-    numArg = len(sys.argv) # get the max number
-    if numArg != 2 :
-        print("usage: python PA1_Kallumkal.py QUESTIONS.YAML") # show the correct usage
-        sys.exit(2) #give the exit code 2 if not correct
-    return sys.argv[1]
-
-def file_exists(filename):
-    """Checks if the file actually exists"""
-    if not pathlib.Path(filename).exists():
-        print("File does not exist: ", filename)
-        sys.exit(1)
-
-def main():
-    file_name = get_questions_fileName()
-    file_exists(file_name)
-    try:
-        questions = load_questions(file_name)
-        validate_questions(questions)
-    except QuizError as e:
-        print(f"error: {e}", file=sys.stderr)
-        sys.exit(1)
-
-
-    # validate_questions("hello")               # fails the first check: top level
-    #validate_questions([{"id": 1}, "oops"])   # passes the first, fails the second: item 2
-
-
-
-if __name__ == "__main__":
-    main()
