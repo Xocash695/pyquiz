@@ -152,7 +152,7 @@ def load_questions(path):
     questions = [Question(item) for item in validated] # create objects of Question
 
     if settings["shuffle_questions"]:
-        questions = random.sample(questions, len(questions))
+        questions = random.sample(questions, len(questions)) #return
 
     return settings, questions
 
