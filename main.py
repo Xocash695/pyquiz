@@ -25,7 +25,7 @@ def main():
         print(f"error: {e}", file=sys.stderr)
         sys.exit(1)
     for n, q in enumerate(questions, start=1):
-        print(f"{n}. {q.question}")
+        quiz.ask(q)
 
 
 if __name__ == "__main__":

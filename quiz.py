@@ -2,6 +2,7 @@ import json
 import functools
 import yaml
 import random
+import questionary
 
 REQUIRED_KEYS = ("id", "question", "options", "answer") #things we are looking for
 LETTERS = ("A", "B", "C", "D") # anwser keys
@@ -12,15 +13,19 @@ class QuizError(Exception):
     """Questions are improperly formatted"""
 
 
-def logged(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        shown = [repr(a) for a in args] + [f"{k}={v!r}" for k, v in kwargs.items()] # formating things to be shown
-        print(f"CALL {func.__name__}({', '.join(shown)})")
-        result = func(*args, **kwargs) # get the result of the function
-        print(f"RESULT: {result}") # show the result
-        return result
-    return wrapper
+def retry(times):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for i in range(times):
+                try:
+                    result = func(*args, **kwargs)
+                    return result
+                except NoAnswerError:
+                    if i == times - 1:
+                        raise
+        return wrapper
+    return decorator
 
 
 class Question:
@@ -157,10 +162,22 @@ def load_questions(path):
     return settings, questions
 
 
-
-def ask(question):
-
+class NoAnswerError(QuizError):
     pass
+
+
+
+@retry(times=3)
+def ask(question):
+    print(question.question)
+    choices = [
+        questionary.Choice(title=f"{label}) {text}", value=label)
+        for label, text in question.options.items()
+    ]
+    chosen = questionary.checkbox("Select your answer(s):", choices=choices).ask()
+    if not chosen:
+          raise NoAnswerError("no answer selected")
+    return chosen
 
 
 def run_round(questions):
